@@ -53,6 +53,7 @@ module.exports.getUserById = function (id) {
     return User.findById(id).exec()
 }
 
+
 module.exports.getUserByEmail = async function (email) {
     try {
         const user = await User.findOne({ email: email });
