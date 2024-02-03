@@ -52,10 +52,8 @@ app.get('/', (req, res) => {
 
 
 let router = express.Router();
-const users = require('./routes/users');
-
-app.use('/users', users);
 app.use('/api', router);
 
 require('./routes/api/user')(router);
+require('./routes/api/video')(router);
 

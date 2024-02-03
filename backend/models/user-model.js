@@ -15,7 +15,8 @@ const UserSchema = mongoose.Schema({
         default: 'user'
     },
 
-    createdAt: { type: Date, require: false, default: Date.now }
+    createdAt: { type: Date, require: false, default: Date.now },
+    updatedAt: { type: Date, require: false, default: Date.now },
 
 })
 
@@ -63,13 +64,21 @@ module.exports.getUserByEmail = async function (email) {
     }
 };
 
+module.exports.deleteUserById = async function (id) {
+    try {
+        const user = await User.deleteOne({ _id: id });
+        return user;
+    } catch (err) {
+        throw err;
+    }
+}
+
 module.exports.addUser = async function (newUser, callback) {
     try {
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(newUser.password, salt);
         newUser.password = hash;
 
-        // Use the model directly, not the schema
         const existingUser = await User.findOne({ email: newUser.email });
 
         if (!existingUser) {
@@ -83,7 +92,6 @@ module.exports.addUser = async function (newUser, callback) {
     }
 };
 
-
 module.exports.comparePassword = function (candidatePassword, hash, callback) {
     bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
         if (err) {
@@ -94,11 +102,10 @@ module.exports.comparePassword = function (candidatePassword, hash, callback) {
 };
 
 
-module.exports.getCountUsers = function (obj, callback) {
+module.exports.getCountUsers = function (callback) {
     User.count().exec(callback);
 };
 
-
-module.exports.getUsers = function (obj, callback) {
-    User.find(obj).exec(callback);
-}
+module.exports.getAll = function (obj) {
+    return User.find(obj);
+};
