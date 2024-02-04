@@ -1,0 +1,195 @@
+openapi: 3.0.0
+info:
+  title: Videos API
+  description: API for managing videos
+  version: 1.0.0
+
+paths:
+  /videos/register/{user_id}:
+    post:
+      summary: Create a new video
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          description: User ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Video'
+      responses:
+        '200':
+          description: Video created successfully
+        '400':
+          description: Bad request
+
+  /videos/react/{video_id}:
+    get:
+      summary: React to a video
+      parameters:
+        - in: path
+          name: video_id
+          required: true
+          description: Video ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Video reacted successfully
+        '404':
+          description: Video not found
+
+  /videos/my_videos/{user_id}:
+    get:
+      summary: Get user's videos
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          description: User ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User's videos retrieved successfully
+        '401':
+          description: Unauthorized
+
+  /videos/video_type/{user_id}:
+    get:
+      summary: Get videos based on privacy type
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          description: User ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Videos retrieved successfully
+        '401':
+          description: Unauthorized
+
+  /videos/top_rated/{user_id}:
+    get:
+      summary: Get top-rated videos
+      parameters:
+        - in: path
+          name: user_id
+          required: false
+          description: User ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Top-rated videos retrieved successfully
+        '401':
+          description: Unauthorized
+
+  /videos/view/{video_id}/{user_id}:
+    get:
+      summary: View a video
+      parameters:
+        - in: path
+          name: video_id
+          required: true
+          description: Video ID
+          schema:
+            type: string
+        - in: path
+          name: user_id
+          required: false
+          description: User ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Video viewed successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Video not found
+
+  /videos/edit/{video_id}/{user_id}:
+    put:
+      summary: Edit a video
+      parameters:
+        - in: path
+          name: video_id
+          required: true
+          description: Video ID
+          schema:
+            type: string
+        - in: path
+          name: user_id
+          required: true
+          description: User ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Video'
+      responses:
+        '200':
+          description: Video edited successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Video not found
+
+  /videos/delete/{video_id}/{user_id}:
+    delete:
+      summary: Delete a video
+      parameters:
+        - in: path
+          name: video_id
+          required: true
+          description: Video ID
+          schema:
+            type: string
+        - in: path
+          name: user_id
+          required: true
+          description: User ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Video deleted successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Video not found
+
+components:
+  schemas:
+    Video:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        credits:
+          type: string
+        videoUrl:
+          type: string
+        category:
+          type: string
+          enum:
+            - comedy
+            - terror
+            - motivation
+            - podcast
+            - game
+            - tutorial
+        private:
+          type: boolean
