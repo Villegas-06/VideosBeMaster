@@ -1,6 +1,7 @@
 const request = require('supertest');
 const express = require('express');
 const app = express();
+const jwt = require('jsonwebtoken');
 const userController = require('../controllers/user-controller');
 
 // Mock user data for testing
@@ -23,6 +24,21 @@ app.get('/users/get_users/:user_id', userController.getUsers);
 app.put('/users/edit/:user_id', userController.editUsers);
 
 describe('User Controller Tests', () => {
+
+    let token;  // Variable to store the JWT token
+
+    // Before running the tests, generate a JWT token for authentication
+    beforeAll(async () => {
+        const response = await request(app)
+            .post('/users/authenticate')
+            .send({
+                email: 'john@example.com',
+                password: 'password123',
+            });
+
+        token = response.body.token;
+    });
+
     test('createUser should create a new user', async () => {
         const response = await request(app)
             .post('/users/register')
@@ -63,6 +79,7 @@ describe('User Controller Tests', () => {
     test('deleteUser should delete the user and return the deleted user', async () => {
         const response = await request(app)
             .delete(`/users/delete/65bd67602858dbec465e18af`)
+            .set('Authorization', `Bearer ${token}`)
             .send();
 
         expect(response.statusCode).toBe(200);
@@ -74,6 +91,7 @@ describe('User Controller Tests', () => {
     test('deleteUser should return a not found message for an invalid user ID', async () => {
         const response = await request(app)
             .delete(`/users/delete/65bd67602858dbec465e18af`)
+            .set('Authorization', `Bearer ${token}`)
             .send();
 
         expect(response.statusCode).toBe(200);
@@ -84,6 +102,7 @@ describe('User Controller Tests', () => {
     test('getUsers should return a list of all users', async () => {
         const response = await request(app)
             .get('/users/get_users/65bd6ad881a3bc06f7623ae3')
+            .set('Authorization', `Bearer ${token}`)
             .send();
 
         expect(response.statusCode).toBe(200);
@@ -93,6 +112,7 @@ describe('User Controller Tests', () => {
     test('editUsers should update the user and return the updated user', async () => {
         const response = await request(app)
             .put(`/users/edit/65bd6ad881a3bc06f7623ae3`)
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 name: 'UpdatedName',
                 userType: 'admin',
@@ -107,6 +127,7 @@ describe('User Controller Tests', () => {
     test('editUsers should return a not found message for an invalid user ID', async () => {
         const response = await request(app)
             .put(`/users/edit/65bd6ad881a3bc06f7623ae4`)
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 name: 'UpdatedName',
             });

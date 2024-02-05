@@ -2,6 +2,7 @@
 const request = require('supertest');
 const express = require('express');
 const app = express();
+const jwt = require('jsonwebtoken');
 const videoController = require('../controllers/video-controller');
 
 // Mock video data for testing
@@ -26,9 +27,24 @@ app.get('/videos/my_videos/:user_id', videoController.myVideos);
 app.get('/videos/video_type/:user_id', videoController.videoType);
 
 describe('Video Controller Tests', () => {
+
+    let token;  // Variable to store the JWT token
+
+    // Before running the tests, generate a JWT token for authentication
+    beforeAll(async () => {
+        const response = await request(app)
+            .post('/users/authenticate')  // Assuming you have an authentication route
+            .send({
+                email: 'john@example.com',
+                password: 'password123',
+            });
+
+        token = response.body.token;
+    });
     test('createVideo should create a new video', async () => {
         const response = await request(app)
             .post('/videos/register/:user_id')
+            .set('Authorization', `Bearer ${token}`)
             .send(mockVideo);
 
         expect(response.statusCode).toBe(200);
@@ -86,6 +102,7 @@ describe('Video Controller Tests', () => {
     test('myVideos should return the videos published by a user', async () => {
         const response = await request(app)
             .get(`/videos/my_videos/65bd67602858dbec465e18af`)
+            .set('Authorization', `Bearer ${token}`)
             .send();
 
         expect(response.statusCode).toBe(200);
@@ -95,7 +112,8 @@ describe('Video Controller Tests', () => {
 
     test('myVideos should return a message for a user with no published videos', async () => {
         const response = await request(app)
-            .get(`/videos/my_videos/65c034479af89440d2e3490b`) // Replace anotherMockUserId with a different user ID
+            .get(`/videos/my_videos/65c034479af89440d2e3490b`)
+            .set('Authorization', `Bearer ${token}`)// Replace anotherMockUserId with a different user ID
             .send();
 
         expect(response.statusCode).toBe(200);
@@ -106,12 +124,14 @@ describe('Video Controller Tests', () => {
     test('videoType should return public or private videos based on the provided boolean', async () => {
         const responsePublic = await request(app)
             .post('/videos/video_type/65bd67602858dbec465e18af')
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 private: false,
             });
 
         const responsePrivate = await request(app)
             .post('/videos/video_type/65bd67602858dbec465e18af')
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 private: true,
             });
@@ -128,6 +148,7 @@ describe('Video Controller Tests', () => {
     test('videoType should return an error message for missing private boolean', async () => {
         const response = await request(app)
             .post('/videos/video_type/65bd67602858dbec465e18af')
+            .set('Authorization', `Bearer ${token}`)
             .send();
 
         expect(response.statusCode).toBe(200);
