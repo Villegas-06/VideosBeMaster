@@ -568,6 +568,22 @@
           "publicatedAt": "2024-02-04T12:34:56Z"
         }
       },
+      "UserAuthentication": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": ["email, password"],
+        "example": {
+          "email": "alguien@gmail.com",
+          "password": "12345678"
+        }
+      },
       "User": {
         "type": "object",
         "properties": {
