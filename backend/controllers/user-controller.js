@@ -6,7 +6,19 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user-model');
 const config = require('../config/config');
 
+const { createUserValidationRules, authenticateValidationRules, editUserValidationRules } = require('../validators/user-validator');
+const { validationResult } = require('express-validator');
+
 exports.createUser = function (req, res) {
+
+    createUserValidationRules(req);
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, message: "Validation failed", errors: errors.array() });
+    }
+
     if (req.body.name &&
         req.body.lastname &&
         req.body.username &&
@@ -33,6 +45,15 @@ exports.createUser = function (req, res) {
 };
 
 exports.authenticate = async function (req, res) {
+
+    authenticateValidationRules(req);
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, message: "Validation failed", errors: errors.array() });
+    }
+
     const email = req.body.email;
     const password = req.body.password;
 
@@ -121,6 +142,15 @@ exports.getUsers = function (req, res) {
 };
 
 exports.editUsers = async function (req, res) {
+
+    editUserValidationRules(req);
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, message: "Validation failed", errors: errors.array() });
+    }
+
     const userId = req.params.user_id;
     const newData = req.body;
 

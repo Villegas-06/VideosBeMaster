@@ -2,10 +2,19 @@
 
 const Video = require('../models/videos-model');
 const User = require('../models/user-model');
+const { validationResult } = require('express-validator');
+const { videoValidationRules, reactVideoValidationRules, editVideoValidationRules } = require('../validators/video-validator');
 
-const UserMiddleware = require('../middleware/user-middleware');
 
 exports.createVideo = function (req, res) {
+
+    videoValidationRules(req);
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, message: "Validation failed", errors: errors.array() });
+    }
 
     if (req.body.title &&
         req.body.description &&
@@ -46,35 +55,44 @@ exports.createVideo = function (req, res) {
     }
 }
 
-exports.viewVideo = async function(req, res){
+exports.viewVideo = async function (req, res) {
     const videoId = req.params.video_id;
     const userId = req.params.user_id || null;
 
-    try{
-    
-        if(userId === null){
-            const videosLonger = await Video.find({private: false, _id: videoId});
+    try {
 
-            return res.json({success: true, result: videosLonger, message: "You only view public videos now, if you want all videos you may create a account"});
-        }else{
-            const videosLonger = await Video.find({_id: videoId});
+        if (userId === null) {
+            const videosLonger = await Video.find({ private: false, _id: videoId });
+
+            return res.json({ success: true, result: videosLonger, message: "You only view public videos now, if you want all videos you may create a account" });
+        } else {
+            const videosLonger = await Video.find({ _id: videoId });
 
             const userInfo = await User.getUserById(userId)
 
-            if(userInfo){
-                return res.json({success: true, result: videosLonger});
-            }else{
-                return res.json({success: false, message: "Permission denied. Only users register can perform this action."})
+            if (userInfo) {
+                return res.json({ success: true, result: videosLonger });
+            } else {
+                return res.json({ success: false, message: "Permission denied. Only users register can perform this action." })
             }
 
         }
 
-    }catch(err){
-        return res.status(401).json({success: false, message: err})
+    } catch (err) {
+        return res.status(401).json({ success: false, message: err })
     }
 }
 
 exports.reactVideo = async function (req, res) {
+
+    reactVideoValidationRules(req);
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, message: "Validation failed", errors: errors.array() });
+    }
+
     const videoId = req.params.video_id;
 
     try {
@@ -126,26 +144,26 @@ exports.reactVideo = async function (req, res) {
     }
 };
 
-exports.myVideos = async function(req, res){
+exports.myVideos = async function (req, res) {
     const userId = req.params.user_id;
 
-    try{
+    try {
 
-        const myVideos = await Video.find({authorId: userId});
+        const myVideos = await Video.find({ authorId: userId });
 
-        if(myVideos.length === 0){
-            return res.json({success: false, message: "You don't have any videos published"})
+        if (myVideos.length === 0) {
+            return res.json({ success: false, message: "You don't have any videos published" })
         }
 
-        return res.json({success: true, result: myVideos});
+        return res.json({ success: true, result: myVideos });
 
-    }catch(err){
-        return res.status(401).json({success: false, message: err})
+    } catch (err) {
+        return res.status(401).json({ success: false, message: err })
     }
 }
 
-exports.videoType = async function(req, res) {
-    
+exports.videoType = async function (req, res) {
+
     const privateVideo = req.body.private;
 
     try {
@@ -173,11 +191,11 @@ exports.videoType = async function(req, res) {
     }
 }
 
-exports.topRatedVideos = async function(req, res){
+exports.topRatedVideos = async function (req, res) {
 
     const userId = req.params.user_id || null;
 
-    if(userId === null){
+    if (userId === null) {
         const topRatedVideos = await Video.aggregate([
             {
                 $addFields: {
@@ -195,10 +213,10 @@ exports.topRatedVideos = async function(req, res){
                 }
             }
         ]);
-    
-        return res.json({success: true, message: topRatedVideos})
-    
-    }else{
+
+        return res.json({ success: true, message: topRatedVideos })
+
+    } else {
         const topRatedVideos = await Video.aggregate([
             {
                 $addFields: {
@@ -216,17 +234,27 @@ exports.topRatedVideos = async function(req, res){
                 }
             }
         ]);
-    
-        return res.json({success: true, message: topRatedVideos})
-    
+
+        return res.json({ success: true, message: topRatedVideos })
+
     }
 
-   
+
 }
 
 
 
 exports.editVideo = async function (req, res) {
+
+    editVideoValidationRules(req);
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, message: "Validation failed", errors: errors.array() });
+    }
+
+
     const videoId = req.params.video_id;
     const newData = req.body;
 
@@ -237,7 +265,7 @@ exports.editVideo = async function (req, res) {
     if (newData.category) {
         newData.category = newData.userType.toLowerCase();
         let category = newData.category;
-    
+
         if (category && !['comedy', 'terror', 'motivation',
             'podcast', 'game', 'tutorial',].includes(category)) {
             return res.status(400).json({ success: false, message: "Invalid category value only accept comedy, terror, motivation, podcast, game or tutorial" });
@@ -257,7 +285,7 @@ exports.editVideo = async function (req, res) {
 }
 
 
-exports.deleteVideo = async function(req, res){
+exports.deleteVideo = async function (req, res) {
     const videoId = req.params.video_id;
 
     try {
@@ -286,9 +314,9 @@ exports.deleteVideo = async function(req, res){
 }
 
 
-function calculateAverage(array){
-    
-    if(array.length === 0){
+function calculateAverage(array) {
+
+    if (array.length === 0) {
         return 0;
     }
 
